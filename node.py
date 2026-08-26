@@ -5,6 +5,7 @@ import selectors    # allow a server to serve multiple clients
 import types        # obj for addr and data from listening port
 from dataclasses import dataclass
 from typing import ClassVar
+import sys
 
 LISTENING_PORT = 65432
 
@@ -44,6 +45,10 @@ class node:
 
     def __post_init__(self):
         type(self).index += 1
+
+    def parse_payload(self):
+        # obtain destination
+        pass
 
     def start_server(self):
 
@@ -115,46 +120,34 @@ class node:
 
 @dataclass
 class manager:
-    sel = selectors.DefaultSelector()
-    messages = [b"Message 1 from client.", b"Message 2 from client."]
 
-    def start_connections(host, port, num_conns):
-        server_addr = (host, port)
-        for i in range(0, num_conns):
-            connid = i + 1
-            print(f"Starting connection {connid} to {server_addr}")
-            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            sock.setblocking(False)
-            sock.connect_ex(server_addr)
-            events = selectors.EVENT_READ | selectors.EVENT_WRITE
-            data = types.SimpleNamespace(
-                connid=connid,
-                msg_total=sum(len(m) for m in messages),
-                recv_total=0,
-                messages=messages.copy(),
-                outb=b"",
-            )
-            sel.register(sock, events, data=data)
-    def service_connection(key, mask):
-        sock = key.fileobj
-        data = key.data
-        if mask & selectors.EVENT_READ:
-            recv_data = sock.recv(1024)  # Should be ready to read
-            if recv_data:
-                print(f"Received {recv_data!r} from connection {data.connid}")
-                data.recv_total += len(recv_data)
+    payload : str = ""
+    origin = b""
+    ip = "127.0.0.100"
 
-            if not recv_data or data.recv_total == data.msg_total:
-                print(f"Closing connection {data.connid}")
-                sel.unregister(sock)
-                sock.close()
-        if mask & selectors.EVENT_WRITE:
-            if not data.outb and data.messages:
-                data.outb = data.messages.pop(0)
-            if data.outb:
-                print(f"Sending {data.outb!r} to connection {data.connid}")
-                sent = sock.send(data.outb)  # Should be ready to write
-                data.outb = data.outb[sent:]
+    def run(self):
+        self.collect_payload()
+        self.start_client()
+
+    def collect_payload(self):
+        self.payload = input("Please enter your origin:\n")
+        self.origin = self.payload.strip().encode("utf-8")
+        print(self.origin)
+        print(LOOKUP[self.origin])
+        self.payload = self.payload + ", " + input("Please enter your destination:\n")
+        self.payload = self.payload + ", " + input("Please enter your name:\n")
+
+    def start_client(self):
+        print(f"Starting air traffic manager")
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.bind((ip, 0))
+        sock.connect((LOOKUP[self.origin], LISTENING_PORT))
+        sock.sendall(self.payload.encode("utf-8"))
+        response = sock.recv(1024)
+        print(f"Got response {response} from {self.origin} on port {LISTENING_PORT}")
+        self.payload = ""
+        self.origin = b""
+
 
 if __name__ == "__main__":
 
@@ -168,7 +161,20 @@ if __name__ == "__main__":
     for t in airport_threads:
         t.start()
 
-    airports[airport_index[b"ANC"]].start_client(b"SEA", LISTENING_PORT, b"This is Anchorage to Seattle")
+    airport_manager = manager()
+    user_in = ""
+
+    while True:
+        airport_manager.run()
+        user_in = input("Type exit to leave or press enter to input more:\n")
+
+        if user_in.lower() == "exit":
+            # any necessary cleanup of sockets
+            # exit program
+            # sys.exit() does not work
+            pass
+        else:
+            continue
 
 
 
