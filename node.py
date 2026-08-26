@@ -28,6 +28,12 @@ LOOKUP = {
     b"KTN": "127.0.0.17",
 }
 
+HUBS = [b"ANC", b"SEA"]
+
+airports: list[node] = []
+airport_threads = []
+airport_index = {}
+
 @dataclass
 class node:
     index : ClassVar[int] = 0
@@ -93,7 +99,7 @@ class node:
     def start_client(self, dest_host, dest_port, data):
         print(f"Starting client on {self.host}")
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.connect((dest_host, dest_port))
+        sock.connect((LOOKUP[dest_host], dest_port))
         sock.sendall(data)
         response = sock.recv(1024)
         print(f"Got response {response} from {dest_host} on port {dest_port}")
@@ -107,18 +113,14 @@ class node:
 
 if __name__ == "__main__":
 
-    anc = node(b"ANC", LOOKUP[b"ANC"], LISTENING_PORT)
-
-    anc.initialize()
-
-    anc.start_client(LOOKUP[b"SEA"], LISTENING_PORT, b"FAI")
-
-
-    airports = []
-    airport_threads = []
-
-    for name, ip in LOOKUP:
-        temp = node(name, ip, LISTENING_PORT)
+    for name, ip in LOOKUP.items():
+        temp = node(name, ip, LISTENING_PORT, True if name in HUBS else False)
         t = threading.Thread(target=temp.start_server)
         airports.append(temp)
         airport_threads.append(t)
+        airport_index[name] = node.index
+
+    for t in airport_threads:
+        t.start()
+
+    airports[airport_index[b"ANC"]].start_client(b"SEA", LISTENING_PORT, b"This is Anchorage to Seattle")
