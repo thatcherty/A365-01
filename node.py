@@ -29,7 +29,37 @@ LOOKUP = {
     b"KTN": "127.0.0.17",
 }
 
-HUBS = [b"ANC", b"SEA"]
+DIRECT = [
+    # SEA ANC FAI JNU SIT ADK ADQ OTZ NME BET AKN DLG BRW SCC CDV DUT KTN
+
+    [0,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1],  # SEA
+    [1,  0,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1],  # ANC
+
+    [0,  1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0],  # FAI -> ANC
+    [1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0],  # JNU -> SEA
+    [1,  1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0],  # SIT -> SEA/ANC
+    [0,  1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0],  # ADK -> ANC
+    [1,  1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0],  # ADQ -> SEA/ANC
+    [0,  1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0],  # OTZ -> ANC
+    [0,  1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0],  # NME -> ANC
+    [1,  1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0],  # BET -> SEA/ANC
+    [0,  1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0],  # AKN -> ANC
+    [1,  1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0],  # DLG -> SEA/ANC
+    [0,  1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0],  # BRW -> ANC
+    [0,  1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0],  # SCC -> ANC
+    [1,  1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0],  # CDV -> SEA/ANC
+    [1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0],  # DUT -> SEA
+    [1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0],  # KTN -> SEA
+]
+
+# General format - DIRECT[origin][destination]
+# Identify if layover required  if DIRECT[airport_index[origin]][airport_index[destination]] = 0
+# Identify which hub origin can fly to
+# DIRECT[airport_index[origin]][1] -> ANC
+# DIRECT[airport_index[origin]][0] -> SEA
+# Hubs always check destination to confirm whether they are a layover or a destination
+
+HUBS = [b"SEA", b"ANC"]
 
 airports: list[node] = []
 airport_threads = []
@@ -72,17 +102,36 @@ class node:
             
             if mask & selectors.EVENT_WRITE:
                 if data.outb:
+                    final_dest = B""
                     dest = data.outb[5:8]
                     origin = data.outb[0:3]
                     passenger = data.outb[10:]
-                    print(f"{self.name} echoing {data.outb!r} to {data.addr}")
-                    sent = sock.send(data.outb)
-                    data.outb = data.outb[sent:]
+                    #print(f"{self.name} echoing {data.outb!r} to {data.addr}")
 
-                    if dest != self.name:
+                    # check for layover
+                    if (DIRECT[airport_index[origin]][airport_index[dest]] == 0) and self.name not in HUBS:
+                        final_dest = dest
+                        dest = HUBS[1] if DIRECT[airport_index[origin]][1] == 1 else HUBS[0]
+
+                    # confirm whether at destination
+                    if final_dest != self.name:
                         print(f"Sending {passenger} from {self.name!r} @ {LOOKUP[origin]} to {dest} @ {LOOKUP[dest]}")
                         temp_client = threading.Thread(target=self.start_client, args=(dest, LISTENING_PORT,), kwargs={"data": data.outb})
                         temp_client.start()
+                    else:
+                        print(f"{passenger} has reached their final destination of {final_dest}")
+
+                    sent = sock.send(data.outb)
+                    data.outb = data.outb[sent:]
+
+                    # General format - DIRECT[origin][destination]
+                    # Identify if layover required  if DIRECT[airport_index[origin]][airport_index[destination]] = 0
+                    # Identify which hub origin can fly to
+                    # DIRECT[airport_index[origin]][1] -> ANC
+                    # DIRECT[airport_index[origin]][0] -> SEA
+                    # Hubs always check destination to confirm whether they are a layover or a destination
+
+
 
 
         print(f"Starting server on {self.host} listening on port {self.server_port}")
@@ -179,15 +228,6 @@ if __name__ == "__main__":
 
     while True:
         airport_manager.run()
-        user_in = input("Type exit to leave or press enter to input more:\n")
-
-        if user_in.lower() == "exit":
-            # any necessary cleanup of sockets
-            # exit program
-            # sys.exit() does not work
-            pass
-        else:
-            continue
 
 
 
