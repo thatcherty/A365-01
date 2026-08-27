@@ -3,7 +3,7 @@ import threading    # allow a node to be both a client and server
 import time
 import selectors    # allow a server to serve multiple clients
 import types        # obj for addr and data from listening port
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import ClassVar
 import sys
 
@@ -42,19 +42,16 @@ class node:
     host : str
     server_port : int
     hub : bool
+    listening_socket : socket = field(default=False, init=False)
 
     def __post_init__(self):
         type(self).index += 1
-
-    def parse_payload(self):
-        # obtain destination
-        pass
 
     def start_server(self):
 
         def accept_wrapper(sock):
             conn, addr = sock.accept()
-            print(f"Accepted connection from {addr}")
+            print(f"{self.name} accepted connection from {addr}")
             conn.setblocking(False)
             data = types.SimpleNamespace(addr=addr, inb=b"", outb=b"")
             events = selectors.EVENT_READ | selectors.EVENT_WRITE
@@ -67,27 +64,35 @@ class node:
                 recv_data = sock.recv(1024)
                 if recv_data:
                     data.outb += recv_data
+
                 else:
                     print(f"Closing connection to {data.addr}")
                     sel.unregister(sock)
                     sock.close()
+            
             if mask & selectors.EVENT_WRITE:
                 if data.outb:
-                    print(f"Echoing {data.outb!r} to {data.addr}")
+                    dest = data.outb[5:8]
+                    origin = data.outb[0:3]
+                    passenger = data.outb[10:]
+                    print(f"{self.name} echoing {data.outb!r} to {data.addr}")
                     sent = sock.send(data.outb)
                     data.outb = data.outb[sent:]
 
-                # somewhere here I need to parse the message
+                    if dest != self.name:
+                        print(f"Sending {passenger} from {self.name!r} @ {LOOKUP[origin]} to {dest} @ {LOOKUP[dest]}")
+                        temp_client = threading.Thread(target=self.start_client, args=(dest, LISTENING_PORT,), kwargs={"data": data.outb})
+                        temp_client.start()
 
 
         print(f"Starting server on {self.host} listening on port {self.server_port}")
         sel = selectors.DefaultSelector()
 
-        listening_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        listening_socket.bind((self.host, self.server_port))
-        listening_socket.listen()
-        listening_socket.setblocking(False)
-        sel.register(listening_socket, selectors.EVENT_READ, data=None)
+        self.listening_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.listening_socket.bind((self.host, self.server_port))
+        self.listening_socket.listen()
+        self.listening_socket.setblocking(False)
+        sel.register(self.listening_socket, selectors.EVENT_READ, data=None)
 
         try:
             while True:
@@ -107,11 +112,12 @@ class node:
     def start_client(self, dest_host, dest_port, data):
         print(f"Starting client on {self.host}")
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.bind((LOOKUP[self.name],0))
         sock.connect((LOOKUP[dest_host], dest_port))
         sock.sendall(data)
         response = sock.recv(1024)
-        print(f"Got response {response} from {dest_host} on port {dest_port}")
-        
+        print(f"{self.name} got response {response} from {dest_host} on port {dest_port}")
+        sock.close()
 
     def initialize(self):
         print(f"Initializing {self.name}")
@@ -123,7 +129,7 @@ class manager:
 
     payload : str = ""
     origin = b""
-    ip = "127.0.0.100"
+    #ip = "127.0.0.18"
 
     def run(self):
         self.collect_payload()
@@ -140,13 +146,14 @@ class manager:
     def start_client(self):
         print(f"Starting air traffic manager")
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.bind((ip, 0))
+        sock.bind(("127.0.0.18", 0))
         sock.connect((LOOKUP[self.origin], LISTENING_PORT))
         sock.sendall(self.payload.encode("utf-8"))
         response = sock.recv(1024)
-        print(f"Got response {response} from {self.origin} on port {LISTENING_PORT}")
+        print(f"Air traffic manager got response {response} from {self.origin} on port {LISTENING_PORT}")
         self.payload = ""
         self.origin = b""
+        sock.close()
 
 
 if __name__ == "__main__":
@@ -160,6 +167,12 @@ if __name__ == "__main__":
 
     for t in airport_threads:
         t.start()
+
+    for airport in airports:
+        print(airport.name)
+        print(airport.listening_socket.getsockname())
+
+    print(node.index)
 
     airport_manager = manager()
     user_in = ""
