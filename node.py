@@ -133,16 +133,6 @@ class node:
                     sent = sock.send(data.outb)
                     data.outb = data.outb[sent:]
 
-                    # General format - DIRECT[origin][destination]
-                    # Identify if layover required  if DIRECT[airport_index[origin]][airport_index[destination]] = 0
-                    # Identify which hub origin can fly to
-                    # DIRECT[airport_index[origin]][1] -> ANC
-                    # DIRECT[airport_index[origin]][0] -> SEA
-                    # Hubs always check destination to confirm whether they are a layover or a destination
-
-
-
-
         print(f"Starting server on {self.host} listening on port {self.server_port}")
         sel = selectors.DefaultSelector()
 
