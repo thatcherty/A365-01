@@ -6,8 +6,12 @@ import types        # obj for addr and data from listening port
 from dataclasses import dataclass, field
 from typing import ClassVar
 import sys
+import logging
+from pathlib import Path
 
-LOG = 0
+LOG = 1
+logging.basicConfig(filename=Path(__file__).with_name("air_traffic.log"), filemode="w", level=logging.INFO, format="%(asctime)s [%(threadName)s] %(message)s")
+logger = logging.getLogger("air_traffic")
 
 LISTENING_PORT = 65432
 
@@ -63,7 +67,7 @@ DIRECT = [
 
 HUBS = [b"SEA", b"ANC"]
 
-airports: list[node] = []
+airports = []
 airport_threads = []
 airport_index = {}
 
@@ -74,99 +78,108 @@ class node:
     host : str
     server_port : int
     hub : bool
-    listening_socket : socket = field(default=False, init=False)
+    listening_socket: socket.socket = field(default=None, init=False)
+    ready: threading.Event = field(default_factory=threading.Event, init=False)
 
     def __post_init__(self):
         type(self).index += 1
 
     def start_server(self):
-
-        def accept_wrapper(sock):
-            conn, addr = sock.accept()
-            if LOG:
-                print(f"--{self.name} accepted connection from {addr}")
-            conn.setblocking(False)
-            data = types.SimpleNamespace(addr=addr, inb=b"", outb=b"")
-            events = selectors.EVENT_READ | selectors.EVENT_WRITE
-            sel.register(conn, events, data=data)
-
-        def service_connection(key, mask):
-            sock = key.fileobj
-            data = key.data
-            if mask & selectors.EVENT_READ:
-                recv_data = sock.recv(1024)
-                if recv_data:
-                    data.outb += recv_data
-
-                else:
-                    if LOG:
-                        print(f"--Closing connection to {data.addr}")
-                    sel.unregister(sock)
-                    sock.close()
-
-                    # somewhere here I can adjust when the connection closes to ensure output is correct
-            
-            if mask & selectors.EVENT_WRITE:
-                if data.outb:
-                    dest = data.outb[5:8]
-                    origin = data.outb[0:3]
-                    passenger = data.outb[10:]
-                    #print(f"{self.name} echoing {data.outb!r} to {data.addr}")
-                    final_dest = dest
-
-                    if self.name == origin:
-                        print(f"Sending {passenger} from {origin} to {dest}.")
-
-                    # check for layover
-                    if (DIRECT[airport_index[origin]-1][airport_index[dest]-1] == 0) and self.name not in HUBS and self.name != dest:
-                        dest = HUBS[1] if DIRECT[airport_index[origin]-1][1] == 1 else HUBS[0]
-                        print(f"A layover is needed to {dest} @ {LOOKUP[dest]}")
-
-                    # confirm whether at destination
-                    if final_dest != self.name:
-                        print(f"Sending {passenger} from {self.name!r} @ {LOOKUP[self.name]} to {dest} @ {LOOKUP[dest]}")
-                        temp_client = threading.Thread(target=self.start_client, args=(dest, LISTENING_PORT,), kwargs={"data": data.outb})
-                        temp_client.start()
-                    else:
-                        print(f"{passenger} has reached their final destination of {final_dest}")
-
-                    sent = sock.send(data.outb)
-                    data.outb = data.outb[sent:]
-
-        print(f"Starting server on {self.host} listening on port {self.server_port}")
         sel = selectors.DefaultSelector()
-
-        self.listening_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.listening_socket.bind((self.host, self.server_port))
-        self.listening_socket.listen()
-        self.listening_socket.setblocking(False)
-        sel.register(self.listening_socket, selectors.EVENT_READ, data=None)
-
         try:
-            while True:
-                events = sel.select(timeout=None)
-                for key, mask in events:
-                    if key.data is None:
-                        accept_wrapper(key.fileobj)
-                    else:
-                        service_connection(key,mask)
-        except KeyboardInterrupt:
-            print("Exiting - keyboard interrupt")
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server:
+                self.listening_socket = server
+                server.bind((self.host, self.server_port))
+                server.listen()
+                server.setblocking(False)
+                sel.register(server, selectors.EVENT_READ)
+                logger.info("%s listening at %s:%s", self.name.decode(), self.host, self.server_port)
+                self.ready.set()
 
+                while True:
+                    for key, mask in sel.select():
+                        if key.fileobj is server:
+                            conn, addr = server.accept()
+                            conn.setblocking(False)
+                            sel.register(conn, selectors.EVENT_READ,
+                                         data=types.SimpleNamespace(addr=addr, inb=b"", outb=b""))
+                            logger.info("%s accepted connection from %s", self.name.decode(), addr)
+                            continue
+
+                        conn, data = key.fileobj, key.data
+                        if mask & selectors.EVENT_READ:
+                            chunk = conn.recv(1024)
+                            if not chunk:
+                                sel.unregister(conn)
+                                conn.close()
+                                logger.info("%s closed connection from %s", self.name.decode(), data.addr)
+                                continue
+                            data.inb += chunk
+                            # A newline terminates one complete TCP application message.
+                            if b"\n" not in data.inb:
+                                continue
+                            message, _, data.inb = data.inb.partition(b"\n")
+                            try:
+                                self.route_passenger(message)
+                                data.outb = b"OK\n"
+                            except Exception:
+                                logger.exception("%s could not route %r", self.name.decode(), message)
+                                data.outb = b"ERROR\n"
+                            sel.modify(conn, selectors.EVENT_WRITE, data=data)
+
+                        if mask & selectors.EVENT_WRITE and data.outb:
+                            sent = conn.send(data.outb)
+                            data.outb = data.outb[sent:]
+                            if not data.outb:
+                                sel.unregister(conn)
+                                conn.close()
+        except Exception:
+            logger.exception("Server failed for %s", self.name.decode())
+            self.ready.set()
         finally:
             sel.close()
 
+    def route_passenger(self, message):
+        origin, final_dest, passenger = message.split(b", ", 2)
+        if origin not in LOOKUP or final_dest not in LOOKUP:
+            raise ValueError("Unknown airport in passenger message")
+        airport = self.name.decode()
+        logger.info("%s received passenger %s (origin %s, destination %s)",
+                    airport, passenger.decode(), origin.decode(), final_dest.decode())
+
+        if self.name == origin:
+            logger.info("Passenger %s departing %s for %s",
+                        passenger.decode(), origin.decode(), final_dest.decode())
+        if self.name == final_dest:
+            logger.info("Passenger %s arrived at final destination %s",
+                        passenger.decode(), final_dest.decode())
+            return
+
+        next_hop = final_dest
+        if DIRECT[airport_index[self.name]-1][airport_index[final_dest]-1] == 0:
+            if self.name in HUBS:
+                raise ValueError("Hub has no direct route to destination")
+            next_hop = (b"ANC" if DIRECT[airport_index[self.name]-1][1]
+                        else b"SEA")
+            logger.info("Passenger %s requires layover at %s", passenger.decode(), next_hop.decode())
+
+        logger.info("Passenger %s forwarded %s (%s) -> %s (%s)",
+                    passenger.decode(), airport, LOOKUP[self.name],
+                    next_hop.decode(), LOOKUP[next_hop])
+        # Wait for the downstream airport's acknowledgement before replying upstream.
+        # This keeps a passenger's log entries in travel order.
+        self.start_client(next_hop, self.server_port, message)
 
     def start_client(self, dest_host, dest_port, data):
-        #print(f"Starting client on {self.host}")
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.bind((LOOKUP[self.name],0))
-        sock.connect((LOOKUP[dest_host], dest_port))
-        sock.sendall(data)
-        response = sock.recv(1024)
-        if LOG:
-            print(f"--{self.name} got response {response} from {dest_host} on port {dest_port}")
-        sock.close()
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+            sock.bind((LOOKUP[self.name], 0))
+            sock.connect((LOOKUP[dest_host], dest_port))
+            sock.sendall(data + b"\n")
+            response = sock.recv(1024)
+            if response != b"OK\n":
+                raise RuntimeError(f"Unexpected response from {dest_host!r}: {response!r}")
+            logger.info("%s received completion acknowledgement from %s",
+                        self.name.decode(), dest_host.decode())
 
 @dataclass
 class manager:
@@ -181,34 +194,38 @@ class manager:
         
 
     def collect_payload(self):
-        self.payload = input("Please enter your origin:\n")
-        self.origin = self.payload.strip().encode("utf-8")
-        if LOG:
-            print(f"--{self.origin}")
-            print(f"--{LOOKUP[self.origin]}")
-        self.payload = self.payload + ", " + input("Please enter your destination:\n")
-        self.payload = self.payload + ", " + input("Please enter your name:\n")
+        def ask_airport(prompt):
+            while True:
+                airport = input(prompt).strip().upper()
+                if airport.encode("ascii", errors="ignore") in LOOKUP and airport.isascii():
+                    return airport
+                print(f"Invalid airport code: {airport or '(blank)'}. Please enter a listed IATA airport code.")
+
+        origin = ask_airport("Please enter your origin: ")
+        destination = ask_airport("Please enter your destination: ")
+        passenger = input("Please enter your name: ").strip()
+        self.origin = origin.encode("ascii")
+        self.payload = f"{origin}, {destination}, {passenger}"
 
     def start_client(self):
-        if LOG:
-            print(f"--Starting air traffic manager")
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.bind(("127.0.0.18", 0))
-        sock.connect((LOOKUP[self.origin], LISTENING_PORT))
-        sock.sendall(self.payload.encode("utf-8"))
-        response = sock.recv(1024)
-        if LOG:
-            print(f"--Air traffic manager got response {response} from {self.origin} on port {LISTENING_PORT}")
+        logger.info("Manager submitting passenger: %s", self.payload)
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+            sock.bind(("127.0.0.18", 0))
+            sock.connect((LOOKUP[self.origin], LISTENING_PORT))
+            sock.sendall(self.payload.encode("utf-8") + b"\n")
+            response = sock.recv(1024)
+            if response != b"OK\n":
+                raise RuntimeError(f"Passenger routing failed: {response!r}; see air_traffic.log")
+        logger.info("Manager confirmed delivery: %s", self.payload)
+        print("Passenger arrived at destination. (Details saved to air_traffic.log)")
         self.payload = ""
         self.origin = b""
-        #sock.close()
 
 
 if __name__ == "__main__":
-
     for name, ip in LOOKUP.items():
-        temp = node(name, ip, LISTENING_PORT, True if name in HUBS else False)
-        t = threading.Thread(target=temp.start_server)
+        temp = node(name, ip, LISTENING_PORT, name in HUBS)
+        t = threading.Thread(target=temp.start_server, name=f"Airport-{name.decode()}", daemon=True)
         airports.append(temp)
         airport_threads.append(t)
         airport_index[name] = node.index
@@ -216,14 +233,19 @@ if __name__ == "__main__":
     for t in airport_threads:
         t.start()
 
-    for airport in airports:
-        print(airport.name)
-        print(airport.listening_socket.getsockname())
+    # Do not request input until all airport servers have finished initialization.
+    for airport, t in zip(airports, airport_threads):
+        airport.ready.wait()
+        if not t.is_alive():
+            raise RuntimeError(f"Could not start {airport.name.decode()}; see air_traffic.log")
 
-    print(node.index)
-
+    print(f"{len(airports)} airports ready. Activity is logged to air_traffic.log")
     airport_manager = manager()
-    user_in = ""
-
-    while True:
-        airport_manager.run()
+    try:
+        while True:
+            try:
+                airport_manager.run()
+            except ValueError as exc:
+                print(f"Invalid input: {exc}")
+    except (EOFError, KeyboardInterrupt):
+        print("\nExiting.")

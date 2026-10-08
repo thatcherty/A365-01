@@ -1,0 +1,27 @@
+2026-10-07 21:26:29,261 [Airport-ANC] ANC listening at 127.0.0.2:65432
+2026-10-07 21:26:29,261 [Airport-SEA] SEA listening at 127.0.0.1:65432
+2026-10-07 21:26:29,262 [Airport-JNU] JNU listening at 127.0.0.4:65432
+2026-10-07 21:26:29,262 [Airport-SIT] SIT listening at 127.0.0.5:65432
+2026-10-07 21:26:29,261 [Airport-FAI] FAI listening at 127.0.0.3:65432
+2026-10-07 21:26:29,262 [Airport-ADK] ADK listening at 127.0.0.6:65432
+2026-10-07 21:26:29,263 [Airport-ADQ] ADQ listening at 127.0.0.7:65432
+2026-10-07 21:26:29,263 [Airport-OTZ] OTZ listening at 127.0.0.8:65432
+2026-10-07 21:26:29,263 [Airport-NME] NME listening at 127.0.0.9:65432
+2026-10-07 21:26:29,264 [Airport-BET] BET listening at 127.0.0.10:65432
+2026-10-07 21:26:29,264 [Airport-AKN] AKN listening at 127.0.0.11:65432
+2026-10-07 21:26:29,264 [Airport-DLG] DLG listening at 127.0.0.12:65432
+2026-10-07 21:26:29,264 [Airport-SCC] SCC listening at 127.0.0.14:65432
+2026-10-07 21:26:29,265 [Airport-BRW] BRW listening at 127.0.0.13:65432
+2026-10-07 21:26:29,265 [Airport-DUT] DUT listening at 127.0.0.16:65432
+2026-10-07 21:26:29,265 [Airport-CDV] CDV listening at 127.0.0.15:65432
+2026-10-07 21:26:29,265 [Airport-KTN] KTN listening at 127.0.0.17:65432
+2026-10-07 21:26:45,012 [MainThread] Manager submitting passenger: ANC, BRW, Thatcher
+2026-10-07 21:26:45,013 [Airport-ANC] ANC accepted connection from ('127.0.0.18', 31259)
+2026-10-07 21:26:45,013 [Airport-ANC] ANC received passenger Thatcher (origin ANC, destination BRW)
+2026-10-07 21:26:45,013 [Airport-ANC] Passenger Thatcher departing ANC for BRW
+2026-10-07 21:26:45,014 [Airport-ANC] Passenger Thatcher forwarded ANC (127.0.0.2) -> BRW (127.0.0.13)
+2026-10-07 21:26:45,014 [Airport-BRW] BRW accepted connection from ('127.0.0.2', 31260)
+2026-10-07 21:26:45,014 [Airport-BRW] BRW received passenger Thatcher (origin ANC, destination BRW)
+2026-10-07 21:26:45,014 [Airport-BRW] Passenger Thatcher arrived at final destination BRW
+2026-10-07 21:26:45,014 [Airport-ANC] ANC received completion acknowledgement from BRW
+2026-10-07 21:26:45,015 [MainThread] Manager confirmed delivery: ANC, BRW, Thatcher
