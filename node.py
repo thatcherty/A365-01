@@ -1,11 +1,9 @@
-import socket       # open sockets for client server communication
-import threading    # allow a node to be both a client and server
-import time
-import selectors    # allow a server to serve multiple clients
-import types        # obj for addr and data from listening port
+import socket       
+import threading    
+import selectors    
+import types        
 from dataclasses import dataclass, field
 from typing import ClassVar
-import sys
 import logging
 from pathlib import Path
 
