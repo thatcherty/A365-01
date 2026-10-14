@@ -1,27 +1,119 @@
-2026-10-07 21:26:29,261 [Airport-ANC] ANC listening at 127.0.0.2:65432
-2026-10-07 21:26:29,261 [Airport-SEA] SEA listening at 127.0.0.1:65432
-2026-10-07 21:26:29,262 [Airport-JNU] JNU listening at 127.0.0.4:65432
-2026-10-07 21:26:29,262 [Airport-SIT] SIT listening at 127.0.0.5:65432
-2026-10-07 21:26:29,261 [Airport-FAI] FAI listening at 127.0.0.3:65432
-2026-10-07 21:26:29,262 [Airport-ADK] ADK listening at 127.0.0.6:65432
-2026-10-07 21:26:29,263 [Airport-ADQ] ADQ listening at 127.0.0.7:65432
-2026-10-07 21:26:29,263 [Airport-OTZ] OTZ listening at 127.0.0.8:65432
-2026-10-07 21:26:29,263 [Airport-NME] NME listening at 127.0.0.9:65432
-2026-10-07 21:26:29,264 [Airport-BET] BET listening at 127.0.0.10:65432
-2026-10-07 21:26:29,264 [Airport-AKN] AKN listening at 127.0.0.11:65432
-2026-10-07 21:26:29,264 [Airport-DLG] DLG listening at 127.0.0.12:65432
-2026-10-07 21:26:29,264 [Airport-SCC] SCC listening at 127.0.0.14:65432
-2026-10-07 21:26:29,265 [Airport-BRW] BRW listening at 127.0.0.13:65432
-2026-10-07 21:26:29,265 [Airport-DUT] DUT listening at 127.0.0.16:65432
-2026-10-07 21:26:29,265 [Airport-CDV] CDV listening at 127.0.0.15:65432
-2026-10-07 21:26:29,265 [Airport-KTN] KTN listening at 127.0.0.17:65432
-2026-10-07 21:26:45,012 [MainThread] Manager submitting passenger: ANC, BRW, Thatcher
-2026-10-07 21:26:45,013 [Airport-ANC] ANC accepted connection from ('127.0.0.18', 31259)
-2026-10-07 21:26:45,013 [Airport-ANC] ANC received passenger Thatcher (origin ANC, destination BRW)
-2026-10-07 21:26:45,013 [Airport-ANC] Passenger Thatcher departing ANC for BRW
-2026-10-07 21:26:45,014 [Airport-ANC] Passenger Thatcher forwarded ANC (127.0.0.2) -> BRW (127.0.0.13)
-2026-10-07 21:26:45,014 [Airport-BRW] BRW accepted connection from ('127.0.0.2', 31260)
-2026-10-07 21:26:45,014 [Airport-BRW] BRW received passenger Thatcher (origin ANC, destination BRW)
-2026-10-07 21:26:45,014 [Airport-BRW] Passenger Thatcher arrived at final destination BRW
-2026-10-07 21:26:45,014 [Airport-ANC] ANC received completion acknowledgement from BRW
-2026-10-07 21:26:45,015 [MainThread] Manager confirmed delivery: ANC, BRW, Thatcher
+2026-10-13 20:09:48,903 [Airport-SEA] SEA listening at 127.0.0.1:65432
+2026-10-13 20:09:48,903 [Airport-ANC] ANC listening at 127.0.0.2:65432
+2026-10-13 20:09:48,904 [Airport-JNU] JNU listening at 127.0.0.4:65432
+2026-10-13 20:09:48,904 [Airport-FAI] FAI listening at 127.0.0.3:65432
+2026-10-13 20:09:48,905 [Airport-SIT] SIT listening at 127.0.0.5:65432
+2026-10-13 20:09:48,905 [Airport-ADK] ADK listening at 127.0.0.6:65432
+2026-10-13 20:09:48,906 [Airport-ADQ] ADQ listening at 127.0.0.7:65432
+2026-10-13 20:09:48,906 [Airport-OTZ] OTZ listening at 127.0.0.8:65432
+2026-10-13 20:09:48,906 [Airport-NME] NME listening at 127.0.0.9:65432
+2026-10-13 20:09:48,906 [Airport-BET] BET listening at 127.0.0.10:65432
+2026-10-13 20:09:48,907 [Airport-AKN] AKN listening at 127.0.0.11:65432
+2026-10-13 20:09:48,907 [Airport-DLG] DLG listening at 127.0.0.12:65432
+2026-10-13 20:09:48,908 [Airport-BRW] BRW listening at 127.0.0.13:65432
+2026-10-13 20:09:48,908 [Airport-SCC] SCC listening at 127.0.0.14:65432
+2026-10-13 20:09:48,908 [Airport-CDV] CDV listening at 127.0.0.15:65432
+2026-10-13 20:09:48,909 [Airport-DUT] DUT listening at 127.0.0.16:65432
+2026-10-13 20:09:48,909 [Airport-KTN] KTN listening at 127.0.0.17:65432
+2026-10-13 20:10:09,589 [MainThread] Manager submitting passenger: SEA, ANC, Thatcher
+2026-10-13 20:10:09,591 [Airport-SEA] SEA accepted connection from ('127.0.0.18', 14553)
+2026-10-13 20:10:09,604 [Airport-SEA] SEA received passenger Thatcher (origin SEA, destination ANC)
+2026-10-13 20:10:09,604 [Airport-SEA] Passenger Thatcher departing SEA for ANC
+2026-10-13 20:10:09,604 [Airport-SEA] Passenger Thatcher forwarded SEA (127.0.0.1) -> ANC (127.0.0.2)
+2026-10-13 20:10:09,604 [Airport-ANC] ANC accepted connection from ('127.0.0.1', 14554)
+2026-10-13 20:10:09,604 [Airport-ANC] ANC received passenger Thatcher (origin SEA, destination ANC)
+2026-10-13 20:10:09,604 [Airport-ANC] Passenger Thatcher arrived at final destination ANC
+2026-10-13 20:10:09,605 [Airport-SEA] SEA received completion acknowledgement from ANC
+2026-10-13 20:10:09,605 [MainThread] Manager confirmed delivery: SEA, ANC, Thatcher
+2026-10-13 20:10:50,750 [MainThread] Manager submitting passenger: DLG, SCC, Thatcher
+2026-10-13 20:10:50,751 [Airport-DLG] DLG accepted connection from ('127.0.0.18', 12614)
+2026-10-13 20:10:50,751 [Airport-DLG] DLG received passenger Thatcher (origin DLG, destination SCC)
+2026-10-13 20:10:50,751 [Airport-DLG] Passenger Thatcher departing DLG for SCC
+2026-10-13 20:10:50,751 [Airport-DLG] Passenger Thatcher requires layover at ANC
+2026-10-13 20:10:50,751 [Airport-DLG] Passenger Thatcher forwarded DLG (127.0.0.12) -> ANC (127.0.0.2)
+2026-10-13 20:10:50,751 [Airport-ANC] ANC accepted connection from ('127.0.0.12', 12615)
+2026-10-13 20:10:50,751 [Airport-ANC] ANC received passenger Thatcher (origin DLG, destination SCC)
+2026-10-13 20:10:50,751 [Airport-ANC] Passenger Thatcher forwarded ANC (127.0.0.2) -> SCC (127.0.0.14)
+2026-10-13 20:10:50,752 [Airport-SCC] SCC accepted connection from ('127.0.0.2', 12616)
+2026-10-13 20:10:50,752 [Airport-SCC] SCC received passenger Thatcher (origin DLG, destination SCC)
+2026-10-13 20:10:50,752 [Airport-SCC] Passenger Thatcher arrived at final destination SCC
+2026-10-13 20:10:50,752 [Airport-ANC] ANC received completion acknowledgement from SCC
+2026-10-13 20:10:50,752 [Airport-DLG] DLG received completion acknowledgement from ANC
+2026-10-13 20:10:50,753 [MainThread] Manager confirmed delivery: DLG, SCC, Thatcher
+2026-10-13 20:11:59,752 [MainThread] Manager submitting passenger: OTZ, ADK, Thatcher
+2026-10-13 20:11:59,753 [Airport-OTZ] OTZ accepted connection from ('127.0.0.18', 14306)
+2026-10-13 20:11:59,753 [Airport-OTZ] OTZ received passenger Thatcher (origin OTZ, destination ADK)
+2026-10-13 20:11:59,753 [Airport-OTZ] Passenger Thatcher departing OTZ for ADK
+2026-10-13 20:11:59,753 [Airport-OTZ] Passenger Thatcher requires layover at ANC
+2026-10-13 20:11:59,753 [Airport-OTZ] Passenger Thatcher forwarded OTZ (127.0.0.8) -> ANC (127.0.0.2)
+2026-10-13 20:11:59,754 [Airport-ANC] ANC accepted connection from ('127.0.0.8', 14307)
+2026-10-13 20:11:59,754 [Airport-ANC] ANC received passenger Thatcher (origin OTZ, destination ADK)
+2026-10-13 20:11:59,754 [Airport-ANC] Passenger Thatcher forwarded ANC (127.0.0.2) -> ADK (127.0.0.6)
+2026-10-13 20:11:59,754 [Airport-ADK] ADK accepted connection from ('127.0.0.2', 14308)
+2026-10-13 20:11:59,754 [Airport-ADK] ADK received passenger Thatcher (origin OTZ, destination ADK)
+2026-10-13 20:11:59,754 [Airport-ADK] Passenger Thatcher arrived at final destination ADK
+2026-10-13 20:11:59,754 [Airport-ANC] ANC received completion acknowledgement from ADK
+2026-10-13 20:11:59,755 [Airport-OTZ] OTZ received completion acknowledgement from ANC
+2026-10-13 20:11:59,755 [MainThread] Manager confirmed delivery: OTZ, ADK, Thatcher
+2026-10-13 20:12:34,702 [MainThread] Manager submitting passenger: SEA, SEA, Test
+2026-10-13 20:12:34,703 [Airport-SEA] SEA accepted connection from ('127.0.0.18', 50370)
+2026-10-13 20:12:34,703 [Airport-SEA] SEA received passenger Test (origin SEA, destination SEA)
+2026-10-13 20:12:34,703 [Airport-SEA] Passenger Test departing SEA for SEA
+2026-10-13 20:12:34,703 [Airport-SEA] Passenger Test arrived at final destination SEA
+2026-10-13 20:12:34,703 [MainThread] Manager confirmed delivery: SEA, SEA, Test
+2026-10-13 20:12:55,794 [MainThread] Manager submitting passenger: OTZ, OTZ, Test
+2026-10-13 20:12:55,795 [Airport-OTZ] OTZ accepted connection from ('127.0.0.18', 50371)
+2026-10-13 20:12:55,795 [Airport-OTZ] OTZ received passenger Test (origin OTZ, destination OTZ)
+2026-10-13 20:12:55,795 [Airport-OTZ] Passenger Test departing OTZ for OTZ
+2026-10-13 20:12:55,795 [Airport-OTZ] Passenger Test arrived at final destination OTZ
+2026-10-13 20:12:55,795 [MainThread] Manager confirmed delivery: OTZ, OTZ, Test
+2026-10-13 20:19:55,233 [MainThread] Manager submitting passenger: JNU, NME, Thatcher
+2026-10-13 20:19:55,234 [Airport-JNU] JNU accepted connection from ('127.0.0.18', 64365)
+2026-10-13 20:19:55,235 [Airport-JNU] JNU received passenger Thatcher (origin JNU, destination NME)
+2026-10-13 20:19:55,235 [Airport-JNU] Passenger Thatcher departing JNU for NME
+2026-10-13 20:19:55,235 [Airport-JNU] Passenger Thatcher requires layover at SEA
+2026-10-13 20:19:55,235 [Airport-JNU] Passenger Thatcher forwarded JNU (127.0.0.4) -> SEA (127.0.0.1)
+2026-10-13 20:19:55,235 [Airport-SEA] SEA accepted connection from ('127.0.0.4', 64366)
+2026-10-13 20:19:55,235 [Airport-SEA] SEA received passenger Thatcher (origin JNU, destination NME)
+2026-10-13 20:19:55,235 [Airport-SEA] Passenger Thatcher forwarded SEA (127.0.0.1) -> NME (127.0.0.9)
+2026-10-13 20:19:55,236 [Airport-NME] NME accepted connection from ('127.0.0.1', 64367)
+2026-10-13 20:19:55,236 [Airport-NME] NME received passenger Thatcher (origin JNU, destination NME)
+2026-10-13 20:19:55,236 [Airport-NME] Passenger Thatcher arrived at final destination NME
+2026-10-13 20:19:55,236 [Airport-SEA] SEA received completion acknowledgement from NME
+2026-10-13 20:19:55,236 [Airport-JNU] JNU received completion acknowledgement from SEA
+2026-10-13 20:19:55,237 [MainThread] Manager confirmed delivery: JNU, NME, Thatcher
+2026-10-13 20:20:23,553 [MainThread] Manager submitting passenger: SEA, JNU, Thatcher
+2026-10-13 20:20:23,554 [Airport-SEA] SEA accepted connection from ('127.0.0.18', 31087)
+2026-10-13 20:20:23,554 [Airport-SEA] SEA received passenger Thatcher (origin SEA, destination JNU)
+2026-10-13 20:20:23,554 [Airport-SEA] Passenger Thatcher departing SEA for JNU
+2026-10-13 20:20:23,554 [Airport-SEA] Passenger Thatcher forwarded SEA (127.0.0.1) -> JNU (127.0.0.4)
+2026-10-13 20:20:23,554 [Airport-JNU] JNU accepted connection from ('127.0.0.1', 31088)
+2026-10-13 20:20:23,554 [Airport-JNU] JNU received passenger Thatcher (origin SEA, destination JNU)
+2026-10-13 20:20:23,554 [Airport-JNU] Passenger Thatcher arrived at final destination JNU
+2026-10-13 20:20:23,554 [Airport-SEA] SEA received completion acknowledgement from JNU
+2026-10-13 20:20:23,555 [MainThread] Manager confirmed delivery: SEA, JNU, Thatcher
+2026-10-13 20:20:43,413 [MainThread] Manager submitting passenger: JNU, SEA, Thatcher
+2026-10-13 20:20:43,414 [Airport-JNU] JNU accepted connection from ('127.0.0.18', 31103)
+2026-10-13 20:20:43,414 [Airport-JNU] JNU received passenger Thatcher (origin JNU, destination SEA)
+2026-10-13 20:20:43,414 [Airport-JNU] Passenger Thatcher departing JNU for SEA
+2026-10-13 20:20:43,414 [Airport-JNU] Passenger Thatcher forwarded JNU (127.0.0.4) -> SEA (127.0.0.1)
+2026-10-13 20:20:43,414 [Airport-SEA] SEA accepted connection from ('127.0.0.4', 31104)
+2026-10-13 20:20:43,415 [Airport-SEA] SEA received passenger Thatcher (origin JNU, destination SEA)
+2026-10-13 20:20:43,415 [Airport-SEA] Passenger Thatcher arrived at final destination SEA
+2026-10-13 20:20:43,415 [Airport-JNU] JNU received completion acknowledgement from SEA
+2026-10-13 20:20:43,415 [MainThread] Manager confirmed delivery: JNU, SEA, Thatcher
+2026-10-13 20:22:14,195 [MainThread] Manager submitting passenger: NME, CDV, Test
+2026-10-13 20:22:14,196 [Airport-NME] NME accepted connection from ('127.0.0.18', 41936)
+2026-10-13 20:22:14,196 [Airport-NME] NME received passenger Test (origin NME, destination CDV)
+2026-10-13 20:22:14,196 [Airport-NME] Passenger Test departing NME for CDV
+2026-10-13 20:22:14,196 [Airport-NME] Passenger Test requires layover at ANC
+2026-10-13 20:22:14,196 [Airport-NME] Passenger Test forwarded NME (127.0.0.9) -> ANC (127.0.0.2)
+2026-10-13 20:22:14,196 [Airport-ANC] ANC accepted connection from ('127.0.0.9', 41937)
+2026-10-13 20:22:14,196 [Airport-ANC] ANC received passenger Test (origin NME, destination CDV)
+2026-10-13 20:22:14,196 [Airport-ANC] Passenger Test forwarded ANC (127.0.0.2) -> CDV (127.0.0.15)
+2026-10-13 20:22:14,197 [Airport-CDV] CDV accepted connection from ('127.0.0.2', 41938)
+2026-10-13 20:22:14,197 [Airport-CDV] CDV received passenger Test (origin NME, destination CDV)
+2026-10-13 20:22:14,197 [Airport-CDV] Passenger Test arrived at final destination CDV
+2026-10-13 20:22:14,197 [Airport-ANC] ANC received completion acknowledgement from CDV
+2026-10-13 20:22:14,197 [Airport-NME] NME received completion acknowledgement from ANC
+2026-10-13 20:22:14,197 [MainThread] Manager confirmed delivery: NME, CDV, Test
